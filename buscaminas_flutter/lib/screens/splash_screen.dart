@@ -42,6 +42,7 @@ class _SplashScreenState extends State<SplashScreen>
         child: FadeTransition(
           opacity: _fadeAnim,
           child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text('💣', style: TextStyle(fontSize: 80, color: Colors.white)),
               SizedBox(height: 16),
