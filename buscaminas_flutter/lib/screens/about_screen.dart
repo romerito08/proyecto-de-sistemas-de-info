@@ -9,7 +9,7 @@ class AboutScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Créditos')),
       body: Center(
         child: Text(
-          'Sofia Romero: 20241120007 \n\n Jorge Luis García: 20241120008\n\n Proyecto de Microprogramación - Buscaminas en Flutter\n\n Periodo: 2526-3',
+          'Sofia Romero: 20241120007 \n Gianfraco Camporeale: 20251110476\n\n Proyecto de Microprogramación - Buscaminas en Flutter\n Periodo: 2526-3\n Materia: Sistemas de información\n Profesor: Franklin Sandoval',
           style: TextStyle(fontSize: 18),
         ),
       ),

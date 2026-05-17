@@ -17,13 +17,13 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     );
 
     _fadeAnim = Tween<double>(begin: 0, end: 1).animate(_controller);
     _controller.forward();
 
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 3), () {
       Navigator.pushReplacementNamed(context, '/menu');
     });
   }
@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0D1B2A),
+      backgroundColor: const Color(0xFFEAF4DE),
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnim,
@@ -50,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
                 'BUSCAMINAS',
                 style: TextStyle(
                   fontSize: 36,
-                  color: Colors.white,
+                  color: Color(0xFF1B5E20),
                   fontWeight: FontWeight.bold,
                   letterSpacing: 6,
                 ),
@@ -59,7 +59,7 @@ class _SplashScreenState extends State<SplashScreen>
                 "FLUTTER",
                 style: TextStyle(
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Color(0xFF66BB6A),
                   letterSpacing: 12,
                 ),
               ),
