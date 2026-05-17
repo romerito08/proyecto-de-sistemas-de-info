@@ -6,8 +6,13 @@ class AboutScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Creditos')),
-      body: const Center(child: Text('Próximamente')),
+      appBar: AppBar(title: const Text('Créditos')),
+      body: Center(
+        child: Text(
+          'Sofia Romero: 20241120007 \n\n Jorge Luis García: 20241120008\n\n Proyecto de Microprogramación - Buscaminas en Flutter\n\n Periodo: 2526-3',
+          style: TextStyle(fontSize: 18),
+        ),
+      ),
     );
   }
 }
