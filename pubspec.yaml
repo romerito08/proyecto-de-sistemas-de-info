@@ -1,0 +1,23 @@
+﻿name: buscaminas_giansof
+description: "Un juego de Buscaminas creado con Flutter."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '^3.11.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  shared_preferences: ^2.3.2
+  animate_do: ^3.3.4
+  lottie: ^3.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
