@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:buscaminas_flutter/logica/sonido.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,45 +12,45 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   // ── Estado ──────────────────────────────────────────────────────────────────
-  String _difficulty  = 'Fácil';
-  String _theme       = 'Automático';
+  String _difficulty = 'Fácil';
+  String _theme = 'Automático';
   String _numberStyle = 'Clásico';
-  bool   _sound       = true;
-  bool   _animations  = true;
-  bool   _loading     = true;
+  bool _sound = true;
+  bool _animations = true;
+  bool _loading = true;
 
   // ── Opciones ─────────────────────────────────────────────────────────────────
   static const _difficulties = [
-    {'label': 'Fácil',   'desc': '6×6 · 10 minas',  'icon': '🌱'},
-    {'label': 'Medio',   'desc': '8×8 · 20 minas',  'icon': '⚡'},
-    {'label': 'Difícil', 'desc': '10×10 · 30 minas','icon': '💣'},
+    {'label': 'Fácil', 'desc': '6×6 · 10 minas', 'icon': ''},
+    {'label': 'Medio', 'desc': '8×8 · 20 minas', 'icon': ''},
+    {'label': 'Difícil', 'desc': '10×10 · 30 minas', 'icon': ''},
   ];
 
   static const _themes = [
-    {'label': 'Claro',      'icon': Icons.light_mode_rounded},
-    {'label': 'Oscuro',     'icon': Icons.dark_mode_rounded},
+    {'label': 'Claro', 'icon': Icons.light_mode_rounded},
+    {'label': 'Oscuro', 'icon': Icons.dark_mode_rounded},
     {'label': 'Automático', 'icon': Icons.brightness_auto_rounded},
   ];
 
   static const List<Map<String, dynamic>> _numberStyles = [
     {
       'label': 'Clásico',
-      'desc':  '1=azul, 2=verde, 3=rojo…',
+      'desc': '1=azul, 2=verde, 3=rojo…',
       'preview': [Color(0xFF1565C0), Color(0xFF2E7D32), Color(0xFFC62828)],
     },
     {
       'label': 'Colorido',
-      'desc':  'Paleta vibrante y alegre',
+      'desc': 'Paleta vibrante y alegre',
       'preview': [Color(0xFFE91E63), Color(0xFF9C27B0), Color(0xFF00BCD4)],
     },
     {
       'label': 'Retro',
-      'desc':  'Estilo pixel art clásico',
+      'desc': 'Estilo pixel art clásico',
       'preview': [Color(0xFFFFEB3B), Color(0xFF4CAF50), Color(0xFFFF5722)],
     },
     {
       'label': 'Minimalista',
-      'desc':  'Un solo color, diseño limpio',
+      'desc': 'Un solo color, diseño limpio',
       'preview': [Color(0xFF616161), Color(0xFF757575), Color(0xFF9E9E9E)],
     },
   ];
@@ -64,22 +65,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadPreferences() async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
-      _difficulty  = prefs.getString('difficulty')   ?? 'Fácil';
-      _theme       = prefs.getString('theme')        ?? 'Automático';
-      _numberStyle = prefs.getString('numberStyle')  ?? 'Clásico';
-      _sound       = prefs.getBool('sound')          ?? true;
-      _animations  = prefs.getBool('animations')     ?? true;
-      _loading     = false;
+      _difficulty = prefs.getString('difficulty') ?? 'Fácil';
+      _theme = prefs.getString('theme') ?? 'Automático';
+      _numberStyle = prefs.getString('numberStyle') ?? 'Clásico';
+      _sound = prefs.getBool('sound') ?? true;
+      _animations = prefs.getBool('animations') ?? true;
+      _loading = false;
     });
   }
 
   Future<void> _savePreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('difficulty',   _difficulty);
-    await prefs.setString('theme',        _theme);
-    await prefs.setString('numberStyle',  _numberStyle);
-    await prefs.setBool('sound',          _sound);
-    await prefs.setBool('animations',     _animations);
+    await prefs.setString('difficulty', _difficulty);
+    await prefs.setString('theme', _theme);
+    await prefs.setString('numberStyle', _numberStyle);
+    await prefs.setBool('sound', _sound);
+    await prefs.setBool('animations', _animations);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -88,7 +89,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
             SizedBox(width: 10),
-            Text('Configuración guardada', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(
+              'Configuración guardada',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
           ],
         ),
         backgroundColor: const Color(0xFF2E7D32),
@@ -110,13 +114,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SafeArea(
             child: Column(
               children: [
-                // ── Encabezado ────────────────────────────────────────────────
+                // ── Encabezado alineado a la esquina superior izquierda ──
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                   child: Row(
                     children: [
                       IconButton(
-                        onPressed: () => Navigator.pop(context),
+                        onPressed: () async {
+                          await SoundService.playButton(); // Reproduce el sonido al hacer clic
+                          Navigator.pop(context);
+                        },
                         icon: const Icon(
                           Icons.arrow_back_ios_new_rounded,
                           size: 18,
@@ -134,7 +141,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
 
-                // ── Contenido ─────────────────────────────────────────────────
+                // ── Contenido con Scroll ───────────────────────────────────────
                 Expanded(
                   child: _loading
                       ? const Center(
@@ -158,109 +165,191 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
         ],
       ),
+      // ── Botón Guardar Fijo abajo ───────────────────────────────────────────
+      bottomNavigationBar: _loading
+          ? null
+          : SafeArea(
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      constraints: const BoxConstraints(maxWidth: 500),
+                      width: double.infinity,
+                      child: GestureDetector(
+                        onTap: _savePreferences,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF2E7D32),
+                            borderRadius: BorderRadius.circular(14),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(
+                                  0xFF2E7D32,
+                                ).withOpacity(0.35),
+                                blurRadius: 12,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'GUARDAR CONFIGURACIÓN',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 2,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
     );
   }
 
-  // ── Columna izquierda: Dificultad + Tema ─────────────────────────────────────
+  // ── Columna izquierda: Dificultad y Toggles ─────────────────────────────────
   Widget _buildLeftColumn() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(icon: Icons.sports_esports_rounded, title: 'DIFICULTAD'),
+        const _SectionTitle(
+          icon: Icons.sports_esports_rounded,
+          title: 'DIFICULTAD',
+        ),
         const SizedBox(height: 12),
         ..._difficulties.map(
           (d) => _DifficultyTile(
-            label:    d['label'] as String,
-            desc:     d['desc']  as String,
-            emoji:    d['icon']  as String,
+            label: d['label'] as String,
+            desc: d['desc'] as String,
+            emoji: d['icon'] as String,
             selected: _difficulty == d['label'],
-            onTap:    () => setState(() => _difficulty = d['label'] as String),
+            onTap: () => setState(() => _difficulty = d['label'] as String),
           ),
         ),
-        const SizedBox(height: 28),
-        const _SectionTitle(icon: Icons.palette_rounded, title: 'TEMA'),
-        const SizedBox(height: 12),
-        _ThemeSelector(
-          selected:  _theme,
-          themes:    _themes,
-          onChanged: (v) => setState(() => _theme = v),
-        ),
-        const SizedBox(height: 28),
-
+        const SizedBox(height: 24), // Espaciador antes de la siguiente sección
         // ── Opciones toggle ─────────────────────
         const _SectionTitle(icon: Icons.tune_rounded, title: 'OPCIONES'),
         const SizedBox(height: 12),
         _ToggleOption(
-          icon:      Icons.volume_up_rounded,
-          title:     'Efectos de sonido',
-          subtitle:  'Sonidos al revelar casillas y al ganar/perder',
-          value:     _sound,
+          icon: Icons.volume_up_rounded,
+          title: 'Efectos de sonido',
+          subtitle: 'Sonidos al revelar casillas y al ganar/perder',
+          value: _sound,
           onChanged: (v) => setState(() => _sound = v),
         ),
         const SizedBox(height: 10),
         _ToggleOption(
-          icon:      Icons.auto_awesome_rounded,
-          title:     'Animaciones',
-          subtitle:  'Transiciones y efectos visuales del tablero',
-          value:     _animations,
+          icon: Icons.auto_awesome_rounded,
+          title: 'Animaciones',
+          subtitle: 'Transiciones y efectos visuales del tablero',
+          value: _animations,
           onChanged: (v) => setState(() => _animations = v),
         ),
       ],
     );
   }
 
-  // ── Columna derecha: Estilo de números + Guardar ──────────────────────────────
+  // ── Columna derecha: Estilos y Tema ───────────────────────────────────────────
   Widget _buildRightColumn() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(icon: Icons.format_paint_rounded, title: 'ESTILO DE NÚMEROS'),
+        const _SectionTitle(
+          icon: Icons.format_paint_rounded,
+          title: 'ESTILO DE NÚMEROS',
+        ),
         const SizedBox(height: 12),
         ..._numberStyles.map(
           (s) => _NumberStyleTile(
-            label:    s['label'] as String,
-            desc:     s['desc']  as String,
-            preview:  s['preview'] as List<Color>,
+            label: s['label'] as String,
+            desc: s['desc'] as String,
+            preview: s['preview'] as List<Color>,
             selected: _numberStyle == s['label'],
-            onTap:    () => setState(() => _numberStyle = s['label'] as String),
+            onTap: () => setState(() => _numberStyle = s['label'] as String),
           ),
         ),
-        const SizedBox(height: 28),
-        GestureDetector(
-          onTap: _savePreferences,
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF2E7D32),
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF2E7D32).withOpacity(0.35),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.save_rounded, color: Colors.white, size: 18),
-                SizedBox(width: 10),
-                Text(
-                  'GUARDAR CONFIGURACIÓN',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 2,
-                    color: Colors.white,
-                  ),
-                ),
-              ],
-            ),
-          ),
+        const SizedBox(height: 24), // Espaciador antes de la siguiente sección
+
+        const _SectionTitle(icon: Icons.palette_rounded, title: 'TEMA'),
+        const SizedBox(height: 12),
+        _ThemeSelector(
+          selected: _theme,
+          themes: _themes,
+          onChanged: (v) => setState(() => _theme = v),
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+//  LAYOUT ADAPTATIVO
+// ─────────────────────────────────────────────
+
+class _SettingsLayout extends StatelessWidget {
+  final bool isWide;
+  final Widget leftColumn;
+  final Widget rightColumn;
+
+  const _SettingsLayout({
+    required this.isWide,
+    required this.leftColumn,
+    required this.rightColumn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 10),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              // Aquí añadimos el título para que baje y tenga scroll
+              const Text(
+                'CONFIGURACIÓN',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 6,
+                  color: Color(0xFF1B5E20),
+                ),
+              ),
+              const SizedBox(height: 28), // Espacio debajo del título principal
+              // Dependiendo del ancho, se divide en 2 columnas o se mantiene vertical
+              isWide
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: leftColumn),
+                        const SizedBox(width: 32),
+                        Expanded(child: rightColumn),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        leftColumn,
+                        const SizedBox(height: 28),
+                        rightColumn,
+                      ],
+                    ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -407,7 +496,9 @@ class _ThemeSelector extends StatelessWidget {
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? const Color(0xFF2E7D32) : Colors.transparent,
+                  color: isSelected
+                      ? const Color(0xFF2E7D32)
+                      : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
@@ -415,7 +506,9 @@ class _ThemeSelector extends StatelessWidget {
                     Icon(
                       t['icon'] as IconData,
                       size: 20,
-                      color: isSelected ? Colors.white : const Color(0xFF81C784),
+                      color: isSelected
+                          ? Colors.white
+                          : const Color(0xFF81C784),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -424,7 +517,9 @@ class _ThemeSelector extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
-                        color: isSelected ? Colors.white : const Color(0xFF558B2F),
+                        color: isSelected
+                            ? Colors.white
+                            : const Color(0xFF558B2F),
                       ),
                     ),
                   ],
@@ -466,7 +561,9 @@ class _NumberStyleTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? const Color(0xFF2E7D32).withOpacity(0.06) : Colors.white,
+          color: selected
+              ? const Color(0xFF2E7D32).withOpacity(0.06)
+              : Colors.white,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? const Color(0xFF2E7D32) : const Color(0xFFE0E0E0),
@@ -475,27 +572,30 @@ class _NumberStyleTile extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Vista previa de colores
             Row(
-              children: preview.map((c) => Container(
-                width: 22,
-                height: 22,
-                margin: const EdgeInsets.only(right: 3),
-                decoration: BoxDecoration(
-                  color: c,
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: Center(
-                  child: Text(
-                    '${preview.indexOf(c) + 1}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w900,
+              children: preview
+                  .map(
+                    (c) => Container(
+                      width: 22,
+                      height: 22,
+                      margin: const EdgeInsets.only(right: 3),
+                      decoration: BoxDecoration(
+                        color: c,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${preview.indexOf(c) + 1}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-              )).toList(),
+                  )
+                  .toList(),
             ),
             const SizedBox(width: 14),
             Expanded(
@@ -507,22 +607,23 @@ class _NumberStyleTile extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: selected ? const Color(0xFF1B5E20) : const Color(0xFF333333),
+                      color: selected
+                          ? const Color(0xFF1B5E20)
+                          : const Color(0xFF333333),
                     ),
                   ),
                   Text(
                     desc,
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[600],
-                    ),
+                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
                   ),
                 ],
               ),
             ),
             Icon(
               selected ? Icons.check_circle_rounded : Icons.circle_outlined,
-              color: selected ? const Color(0xFF2E7D32) : const Color(0xFFBDBDBD),
+              color: selected
+                  ? const Color(0xFF2E7D32)
+                  : const Color(0xFFBDBDBD),
               size: 20,
             ),
           ],
@@ -589,7 +690,7 @@ class _ToggleOption extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────
-//  FONDO DECORATIVO (idéntico al menú)
+//  FONDO DECORATIVO
 // ─────────────────────────────────────────────
 
 class _BackgroundDecor extends StatelessWidget {
