@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
- 
+
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
- 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,31 +11,30 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
- 
+
 class _SettingsBody extends StatefulWidget {
   const _SettingsBody();
- 
+
   @override
   State<_SettingsBody> createState() => _SettingsBodyState();
 }
- 
+
 class _SettingsBodyState extends State<_SettingsBody> {
   String _difficulty = 'Fácil';
-  bool _vibration = true;
   bool _sound = true;
- 
+
   final List<Map<String, String>> _difficulties = [
     {'label': 'Fácil',   'desc': '6×6 · 10 minas'},
     {'label': 'Medio',   'desc': '8×8 · 20 minas'},
     {'label': 'Difícil', 'desc': '10×10 · 30 minas'},
   ];
- 
+
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(20),
       children: [
- 
+
         // ── Dificultad ──────────────────────────────────────────
         const Text(
           '🎯 Dificultad',
@@ -106,9 +105,9 @@ class _SettingsBodyState extends State<_SettingsBody> {
             ),
           );
         }),
- 
+
         const SizedBox(height: 28),
- 
+
         // ── Opciones ────────────────────────────────────────────
         const Text(
           '🔧 Opciones',
@@ -125,29 +124,17 @@ class _SettingsBodyState extends State<_SettingsBody> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: const Color(0xFFC8E6C9)),
           ),
-          child: Column(
-            children: [
-              SwitchListTile(
-                title: const Text('Sonido'),
-                subtitle: const Text('Efectos de sonido del juego'),
-                value: _sound,
-                activeColor: const Color(0xFF2E7D32),
-                onChanged: (v) => setState(() => _sound = v),
-              ),
-              const Divider(height: 1),
-              SwitchListTile(
-                title: const Text('Vibración'),
-                subtitle: const Text('Vibrar al revelar una mina'),
-                value: _vibration,
-                activeColor: const Color(0xFF2E7D32),
-                onChanged: (v) => setState(() => _vibration = v),
-              ),
-            ],
+          child: SwitchListTile(
+            title: const Text('Sonido'),
+            subtitle: const Text('Efectos de sonido del juego'),
+            value: _sound,
+            activeColor: const Color(0xFF2E7D32),
+            onChanged: (v) => setState(() => _sound = v),
           ),
         ),
- 
+
         const SizedBox(height: 32),
- 
+
         // ── Botón guardar ───────────────────────────────────────
         ElevatedButton.icon(
           onPressed: () {
