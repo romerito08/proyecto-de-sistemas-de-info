@@ -136,10 +136,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void _restartGame() {
     if (_soundEnabled) SoundService.playButton();
     setState(() {
-      _board.reset();
-      if (_animationsEnabled) {
-        _boardFadeController.forward(from: 0);
-      }
+      _initBoard();
     });
   }
 
@@ -189,7 +186,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         backgroundColor: const Color(0xFFF1F8E9),
         title: Text(
@@ -209,10 +206,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
+          // ── Jugar de nuevo: cierra diálogo y reinicia tablero ────────────
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              _restartGame();
+              Navigator.of(dialogContext).pop(); // cierra solo el diálogo
+              if (!mounted) return;
+              setState(() => _initBoard());      // reinicia el tablero
             },
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
@@ -227,10 +226,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               style: TextStyle(fontWeight: FontWeight.w700),
             ),
           ),
+          // ── Menú principal: cierra diálogo y regresa a la pantalla anterior
           TextButton(
             onPressed: () {
-              Navigator.pop(context);
-              Navigator.pop(context);
+              Navigator.of(dialogContext).pop(); // cierra el diálogo
+              if (!mounted) return;
+              Navigator.of(context).pop();       // regresa al menú
             },
             style: TextButton.styleFrom(
               foregroundColor: const Color(0xFF2E7D32),
@@ -296,7 +297,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             child: Row(
               children: [
                 const Icon(
-                  Icons.flag_rounded,
+                  Icons.park_sharp,
                   color: Color(0xFF2E7D32),
                   size: 18,
                 ),
@@ -441,7 +442,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   Widget? _cellContent(Cell cell) {
     if (cell.isFlagged) {
-      return const Text('🚩', style: TextStyle(fontSize: 14));
+      return const Text('🌱', style: TextStyle(fontSize: 14));
     }
     if (!cell.isRevealed) return null;
     if (cell.isMine) {
