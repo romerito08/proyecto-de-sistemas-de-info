@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:buscaminas_flutter/logica/board_logic.dart';
 import 'package:buscaminas_flutter/logica/sonido.dart';
+import 'package:buscaminas_flutter/logica/scores.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -17,6 +19,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   bool _soundEnabled = true;
   bool _animationsEnabled = true;
   bool _loading = true;
+
+  // ── Jugador y cronómetro ──────────────────────────────────────────────────
+  String _playerName = '';
+  int _elapsedSeconds = 0;
+  Timer? _timer;
 
   // ── Lógica del tablero ───────────────────────────────────────────────────
   late BoardLogic _board;
@@ -97,6 +104,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   void dispose() {
+    _timer?.cancel();
     _boardFadeController.dispose();
     super.dispose();
   }
@@ -115,9 +123,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
 
     _initBoard();
+
+    // Pedir nombre antes de empezar
+    WidgetsBinding.instance.addPostFrameCallback((_) => _showNameDialog());
   }
 
   void _initBoard() {
+    _timer?.cancel();
+    _elapsedSeconds = 0;
+
     final params =
         _difficultyParams[_difficulty] ?? _difficultyParams['Fácil']!;
     _board = BoardLogic(
@@ -133,11 +147,112 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     }
   }
 
+  void _startTimer() {
+    _timer?.cancel();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() => _elapsedSeconds++);
+    });
+  }
+
+  void _stopTimer() => _timer?.cancel();
+
+  String get _timeFormatted {
+    final m = _elapsedSeconds ~/ 60;
+    final s = _elapsedSeconds % 60;
+    return m > 0 ? '${m}m ${s.toString().padLeft(2, '0')}s' : '${s}s';
+  }
+
   void _restartGame() {
     if (_soundEnabled) SoundService.playButton();
-    setState(() {
-      _initBoard();
-    });
+    setState(() => _initBoard());
+    _showNameDialog();
+  }
+
+  // ── Diálogo de nombre ─────────────────────────────────────────────────────
+
+  void _showNameDialog() {
+    final controller = TextEditingController(text: _playerName);
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) {
+        return AlertDialog(
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: const Color(0xFFF1F8E9),
+          title: const Text(
+            '¿Cómo te llamas?',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w800,
+              color: Color(0xFF1B5E20),
+              fontSize: 18,
+            ),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Máximo 7 caracteres',
+                style: TextStyle(color: Color(0xFF777777), fontSize: 12),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: controller,
+                autofocus: true,
+                maxLength: 7,
+                textCapitalization: TextCapitalization.words,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFF1B5E20),
+                  letterSpacing: 2,
+                ),
+                decoration: InputDecoration(
+                  counterText: '',
+                  filled: true,
+                  fillColor: Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: Color(0xFFA5D6A7)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(
+                        color: Color(0xFF2E7D32), width: 2),
+                  ),
+                  hintText: 'TU NOMBRE',
+                  hintStyle: const TextStyle(
+                      color: Color(0xFFBDBDBD), fontSize: 16),
+                ),
+              ),
+            ],
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              onPressed: () {
+                final name = controller.text.trim();
+                if (name.isEmpty) return; // no permite vacío
+                setState(() => _playerName = name);
+                Navigator.of(dialogContext).pop();
+              },
+              style: TextButton.styleFrom(
+                backgroundColor: const Color(0xFF2E7D32),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10)),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 36, vertical: 12),
+              ),
+              child: const Text('¡A jugar!',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   // ── Interacciones con el tablero ─────────────────────────────────────────
@@ -148,6 +263,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     final cell = _board.grid[r][c];
     if (cell.isFlagged || cell.isRevealed) return;
+
+    // Arrancar cronómetro en el primer toque real
+    if (_board.gameState == GameState.idle) _startTimer();
 
     setState(() {
       final continua = _board.reveal(r, c);
@@ -165,7 +283,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
     if (_board.gameState == GameState.won ||
         _board.gameState == GameState.lost) {
-      Future.delayed(const Duration(milliseconds: 300), _showGameOverDialog);
+      _stopTimer();
+      Future.delayed(
+          const Duration(milliseconds: 300), _showGameOverDialog);
     }
   }
 
@@ -179,10 +299,45 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     });
   }
 
+  // ── Guardar score ─────────────────────────────────────────────────────────
+
+  Future<void> _saveScore(bool won) async {
+    final entry = ScoreEntry(
+      playerName: _playerName.isEmpty ? 'Jugador' : _playerName,
+      difficulty: _difficulty,
+      won: won,
+      seconds: _elapsedSeconds,
+      date: DateTime.now(),
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    final key = 'scores_$_difficulty';
+    final raw = prefs.getStringList(key) ?? [];
+
+    // Solo guardar si ganó (scores = mejores tiempos)
+    if (won) {
+      raw.add(entry.toJson());
+
+      // Ordenar por tiempo ascendente y conservar solo top 5
+      final entries = raw
+          .map((e) => ScoreEntry.fromJson(e))
+          .where((e) => e.won)
+          .toList()
+        ..sort((a, b) => a.seconds.compareTo(b.seconds));
+
+      final top5 = entries.take(5).map((e) => e.toJson()).toList();
+      await prefs.setStringList(key, top5);
+    }
+  }
+
   // ── Diálogo fin de partida ────────────────────────────────────────────────
 
   void _showGameOverDialog() {
     final won = _board.gameState == GameState.won;
+
+    // Guardar score si ganó
+    if (won) _saveScore(true);
+
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -197,45 +352,59 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           ),
           textAlign: TextAlign.center,
         ),
-        content: Text(
-          won
-              ? 'Completaste $_difficulty sin errores.'
-              : 'Más suerte la próxima vez.',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: Color(0xFF555555)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Nombre del jugador
+            Text(
+              _playerName.isEmpty ? 'Jugador' : _playerName,
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: Color(0xFF1B5E20),
+                letterSpacing: 1.5,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              won
+                  ? 'Completaste $_difficulty en $_timeFormatted'
+                  : 'Duraste $_timeFormatted antes de explotar.',
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: Color(0xFF555555)),
+            ),
+          ],
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
-          // ── Jugar de nuevo: cierra diálogo y reinicia tablero ────────────
+          // ── Jugar de nuevo ───────────────────────────────────────────────
           TextButton(
             onPressed: () {
-              Navigator.of(dialogContext).pop(); // cierra solo el diálogo
+              Navigator.of(dialogContext).pop();
               if (!mounted) return;
-              setState(() => _initBoard());      // reinicia el tablero
+              setState(() => _initBoard());
+              _showNameDialog();
             },
             style: TextButton.styleFrom(
               backgroundColor: const Color(0xFF2E7D32),
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+                  borderRadius: BorderRadius.circular(10)),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
             ),
-            child: const Text(
-              'Jugar de nuevo',
-              style: TextStyle(fontWeight: FontWeight.w700),
-            ),
+            child: const Text('Jugar de nuevo',
+                style: TextStyle(fontWeight: FontWeight.w700)),
           ),
-          // ── Menú principal: cierra diálogo y regresa a la pantalla anterior
+          // ── Menú principal ───────────────────────────────────────────────
           TextButton(
             onPressed: () {
-              Navigator.of(dialogContext).pop(); // cierra el diálogo
+              Navigator.of(dialogContext).pop();
               if (!mounted) return;
-              Navigator.of(context).pop();       // regresa al menú
+              Navigator.of(context).pop();
             },
-            style: TextButton.styleFrom(
-              foregroundColor: const Color(0xFF2E7D32),
-            ),
+            style:
+                TextButton.styleFrom(foregroundColor: const Color(0xFF2E7D32)),
             child: const Text('Menú principal'),
           ),
         ],
@@ -280,27 +449,56 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             Navigator.pop(context);
           },
         ),
-        title: Text(
-          _difficulty.toUpperCase(),
-          style: const TextStyle(
-            color: Color(0xFF1B5E20),
-            fontWeight: FontWeight.w800,
-            letterSpacing: 2,
-            fontSize: 16,
-          ),
+        title: Column(
+          children: [
+            Text(
+              _difficulty.toUpperCase(),
+              style: const TextStyle(
+                color: Color(0xFF1B5E20),
+                fontWeight: FontWeight.w800,
+                letterSpacing: 2,
+                fontSize: 14,
+              ),
+            ),
+            if (_playerName.isNotEmpty)
+              Text(
+                _playerName,
+                style: const TextStyle(
+                  color: Color(0xFF2E7D32),
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+          ],
         ),
         centerTitle: true,
         actions: [
+          // Cronómetro
+          Padding(
+            padding: const EdgeInsets.only(right: 4),
+            child: Row(
+              children: [
+                const Icon(Icons.timer_outlined,
+                    color: Color(0xFF2E7D32), size: 16),
+                const SizedBox(width: 2),
+                Text(
+                  _timeFormatted,
+                  style: const TextStyle(
+                    color: Color(0xFF1B5E20),
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
           // Contador de minas restantes
           Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Row(
               children: [
-                const Icon(
-                  Icons.park_sharp,
-                  color: Color(0xFF2E7D32),
-                  size: 18,
-                ),
+                const Icon(Icons.park_sharp,
+                    color: Color(0xFF2E7D32), size: 18),
                 const SizedBox(width: 4),
                 Text(
                   '${_board.minesLeft}',
