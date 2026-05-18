@@ -37,85 +37,18 @@ class InstructionsScreen extends StatelessWidget {
                   ),
                 ),
 
-                // ── Contenido escaneable con scroll y restricción de ancho ──
+                // ── Contenido Escaneable y Adaptativo ──
                 Expanded(
-                  child: Center(
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 480),
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 28,
-                          vertical: 24,
-                        ),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 16),
-                            const Text(
-                              'INSTRUCCIONES',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 6,
-                                color: Color(0xFF1B5E20),
-                              ),
-                            ),
-                            const SizedBox(height: 14),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isWide = constraints.maxWidth > 700;
 
-                            // Tarjeta de Objetivo Principal
-                            _buildObjectiveCard(),
-                            const SizedBox(height: 28),
-
-                            // Sección de Reglas de Juego
-                            const _SectionTitle(title: 'REGLAS DE JUEGO'),
-                            const SizedBox(height: 12),
-                            const _InstructionTile(
-                              icon: Icons.touch_app_rounded,
-                              iconColor: Color(0xFF2E7D32),
-                              text: 'Toca una casilla del tablero para revelarla. ¡No te preocupes! El primer toque siempre estará libre de peligro.',
-                            ),
-                            const _InstructionTile(
-                              icon: Icons.looks_one_rounded,
-                              iconColor: Color(0xFF388E3C),
-                              text: 'Los números revelados te indican cuántas minas hay escondidas en las 8 casillas que la rodean.',
-                            ),
-                            const _InstructionTile(
-                              icon: Icons.auto_awesome_mosaic_rounded,
-                              iconColor: Color(0xFF00796B),
-                              text: 'Si revelas una casilla vacía (0 minas adyacentes), se abrirá automáticamente toda el área conectada.',
-                            ),
-                            const _InstructionTile(
-                              icon: Icons.emoji_events_rounded,
-                              iconColor: Color(0xFF558B2F),
-                              text: '¡Ganas la partida cuando logres descubrir y limpiar todas las casillas seguras del mapa!',
-                            ),
-                            const SizedBox(height: 28),
-
-                            // Sección de Dificultades
-                            const _SectionTitle(title: 'NIVELES DE DESAFÍO'),
-                            const SizedBox(height: 12),
-                            const _DifficultyRow(
-                              title: 'FÁCIL',
-                              details: 'Tablero 6 × 6',
-                              mines: '10 minas',
-                              color: Color(0xFF2E7D32),
-                            ),
-                            const _DifficultyRow(
-                              title: 'MEDIO',
-                              details: 'Tablero 8 × 8',
-                              mines: '20 minas',
-                              color: Color(0xFF00796B),
-                            ),
-                            const _DifficultyRow(
-                              title: 'DIFÍCIL',
-                              details: 'Tablero 10 × 10',
-                              mines: '30 minas',
-                              color: Color(0xFF00695C),
-                            ),
-                            const SizedBox(height: 32),
-                          ],
-                        ),
-                      ),
-                    ),
+                      return _InstructionsLayout(
+                        isWide: isWide,
+                        leftColumn: _buildLeftColumn(),
+                        rightColumn: _buildRightColumn(),
+                      );
+                    },
                   ),
                 ),
               ],
@@ -123,6 +56,76 @@ class InstructionsScreen extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // ── Columna Izquierda: Objetivo y Reglas ──
+  Widget _buildLeftColumn() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Tarjeta de Objetivo Principal
+        _buildObjectiveCard(),
+        const SizedBox(height: 28),
+
+        // Sección de Dificultades
+        _SectionTitle(title: 'NIVELES DE DESAFÍO'),
+        const SizedBox(height: 12),
+        _DifficultyRow(
+          title: 'FÁCIL',
+          details: 'Tablero 6 × 6',
+          mines: '10 minas',
+          color: Color(0xFF2E7D32),
+        ),
+        _DifficultyRow(
+          title: 'MEDIO',
+          details: 'Tablero 8 × 8',
+          mines: '20 minas',
+          color: Color(0xFF00796B),
+        ),
+        _DifficultyRow(
+          title: 'DIFÍCIL',
+          details: 'Tablero 10 × 10',
+          mines: '30 minas',
+          color: Color(0xFF00695C),
+          // Sección de Reglas de Juego
+        ),
+      ],
+    );
+  }
+
+  // ── Columna Derecha: Niveles de Desafío ──
+  Widget _buildRightColumn() {
+    return const Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionTitle(title: 'REGLAS DE JUEGO'),
+        const SizedBox(height: 12),
+        const _InstructionTile(
+          icon: Icons.touch_app_rounded,
+          iconColor: Color(0xFF2E7D32),
+          text:
+              'Toca una casilla del tablero para revelarla. ¡No te preocupes! El primer toque siempre estará libre de peligro.',
+        ),
+        const _InstructionTile(
+          icon: Icons.looks_one_rounded,
+          iconColor: Color(0xFF388E3C),
+          text:
+              'Los números revelados te indican cuántas minas hay escondidas en las 8 casillas que la rodean.',
+        ),
+        const _InstructionTile(
+          icon: Icons.auto_awesome_mosaic_rounded,
+          iconColor: Color(0xFF00796B),
+          text:
+              'Si revelas una casilla vacía (0 minas adyacentes), se abrirá automáticamente toda el área conectada.',
+        ),
+        const _InstructionTile(
+          icon: Icons.emoji_events_rounded,
+          iconColor: Color(0xFF558B2F),
+          text:
+              '¡Ganas la partida cuando logres descubrir y limpiar todas las casillas seguras del mapa!',
+        ),
+      ],
     );
   }
 
@@ -143,12 +146,12 @@ class InstructionsScreen extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: const Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Text(
+              Text(
                 'OBJETIVO',
                 style: TextStyle(
                   fontSize: 14,
@@ -159,8 +162,8 @@ class InstructionsScreen extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 10),
-          const Text(
+          SizedBox(height: 10),
+          Text(
             'Tu misión es despejar todo el campo de juego descubriendo todas las casillas seguras. ¡Si pisas una sola mina oculta, perderás de inmediato!',
             style: TextStyle(
               fontSize: 14,
@@ -170,6 +173,68 @@ class InstructionsScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────
+//  LAYOUT ADAPTATIVO INTERNO
+// ─────────────────────────────────────────────
+
+class _InstructionsLayout extends StatelessWidget {
+  final bool isWide;
+  final Widget leftColumn;
+  final Widget rightColumn;
+
+  const _InstructionsLayout({
+    required this.isWide,
+    required this.leftColumn,
+    required this.rightColumn,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+      child: Center(
+        child: Container(
+          constraints: const BoxConstraints(maxWidth: 1000),
+          child: Column(
+            children: [
+              const SizedBox(height: 16),
+              const Text(
+                'INSTRUCCIONES',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 6,
+                  color: Color(0xFF1B5E20),
+                ),
+              ),
+              const SizedBox(height: 28),
+
+              // Si la pantalla es ancha, se divide en fila de 2 columnas expandidas.
+              // De lo contrario, se renderiza una sola columna hacia abajo.
+              isWide
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: leftColumn),
+                        const SizedBox(width: 32),
+                        Expanded(child: rightColumn),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        leftColumn,
+                        const SizedBox(height: 28),
+                        rightColumn,
+                      ],
+                    ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -296,7 +361,14 @@ class _DifficultyRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Container(width: 4, height: 4, decoration: const BoxDecoration(shape: BoxShape.circle, color: Colors.grey)),
+          Container(
+            width: 4,
+            height: 4,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey,
+            ),
+          ),
           const SizedBox(width: 12),
           Text(
             mines,
@@ -316,7 +388,6 @@ class _DifficultyRow extends StatelessWidget {
 //  FONDO
 // ─────────────────────────────────────────────
 
-
 class _BackgroundDecor extends StatelessWidget {
   const _BackgroundDecor();
 
@@ -332,13 +403,25 @@ class _BgPainter extends CustomPainter {
     final paint = Paint()..style = PaintingStyle.fill;
 
     paint.color = const Color(0xFFC8E6C9).withOpacity(0.5);
-    canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.05), size.width * 0.4, paint);
+    canvas.drawCircle(
+      Offset(size.width * 0.85, size.height * 0.05),
+      size.width * 0.4,
+      paint,
+    );
 
     paint.color = const Color(0xFFB2DFDB).withOpacity(0.45);
-    canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.92), size.width * 0.38, paint);
+    canvas.drawCircle(
+      Offset(size.width * 0.05, size.height * 0.92),
+      size.width * 0.38,
+      paint,
+    );
 
     paint.color = const Color(0xFFDCEDC8).withOpacity(0.35);
-    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.5), size.width * 0.55, paint);
+    canvas.drawCircle(
+      Offset(size.width * 0.5, size.height * 0.5),
+      size.width * 0.55,
+      paint,
+    );
   }
 
   @override
