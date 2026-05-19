@@ -1,40 +1,68 @@
 import 'package:flutter/material.dart';
-import 'settings_screen.dart';
-import 'game_screen.dart';
-import 'instructions.dart';
-import 'scores_screen.dart';
-import 'about_screen.dart';
 
-void main() {
-  runApp(const MenuScreen());
-}
+// ─────────────────────────────────────────────
+//  PALETA ADAPTATIVA
+// ─────────────────────────────────────────────
 
-class MenuScreen extends StatelessWidget {
-  const MenuScreen({super.key});
+class _Palette {
+  final Color background;
+  final Color surface;
+  final Color surfaceBorder;
+  final Color accent;
+  final Color accentLight;
+  final Color accentMuted;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color iconBg;
+  final Color iconBorder;
+  final Color divider;
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Buscaminas Flutter',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF2E7D32),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const MainMenuScreen(),
-        '/settings': (context) => const SettingsScreen(),
-        '/game': (context) => const GameScreen(),
-        '/instructions': (context) => const InstructionsScreen(),
-        '/scores': (context) => const ScoresScreen(),
-        '/about': (context) => const AboutScreen(),
-      },
-    );
+  const _Palette._({
+    required this.background,
+    required this.surface,
+    required this.surfaceBorder,
+    required this.accent,
+    required this.accentLight,
+    required this.accentMuted,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.iconBg,
+    required this.iconBorder,
+    required this.divider,
+  });
+
+  factory _Palette.of(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return dark ? _Palette._dark() : _Palette._light();
   }
+
+  factory _Palette._light() => const _Palette._(
+        background: Color(0xFFF1F8E9),
+        surface: Colors.white,
+        surfaceBorder: Color(0xFFC8E6C9),
+        accent: Color(0xFF2E7D32),
+        accentLight: Color(0xFFA5D6A7),
+        accentMuted: Color(0xFF66BB6A),
+        textPrimary: Color(0xFF1B5E20),
+        textSecondary: Color(0xFF81C784),
+        iconBg: Color(0xFFDCEDC8),
+        iconBorder: Color(0xFFA5D6A7),
+        divider: Color(0xFF81C784),
+      );
+
+  factory _Palette._dark() => const _Palette._(
+        background: Color(0xFF121212),
+        surface: Color(0xFF1E1E1E),
+        surfaceBorder: Color(0xFF2E4A2E),
+        accent: Color(0xFF81C784),
+        accentLight: Color(0xFF388E3C),
+        accentMuted: Color(0xFF4CAF50),
+        textPrimary: Color(0xFFA5D6A7),
+        textSecondary: Color(0xFF4CAF50),
+        iconBg: Color(0xFF1B3A1B),
+        iconBorder: Color(0xFF388E3C),
+        divider: Color(0xFF4CAF50),
+      );
 }
 
 // ─────────────────────────────────────────────
@@ -103,13 +131,14 @@ class _MainMenuScreenState extends State<MainMenuScreen>
 
   @override
   Widget build(BuildContext context) {
+    final p = _Palette.of(context);
     final isWide = MediaQuery.of(context).size.width > 700;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F8E9),
+      backgroundColor: p.background,
       body: Stack(
         children: [
-          const _BackgroundDecor(),
+          _BackgroundDecor(p: p),
           SafeArea(
             child: Center(
               child: ConstrainedBox(
@@ -126,16 +155,16 @@ class _MainMenuScreenState extends State<MainMenuScreen>
                         opacity: _titleFade,
                         child: SlideTransition(
                           position: _titleSlide,
-                          child: const _GameTitle(),
+                          child: _GameTitle(p: p),
                         ),
                       ),
                       const SizedBox(height: 40),
                       ..._menuItems.map((item) => _AnimatedMenuButton(
                             item: item,
                             controller: _menuController,
+                            p: p,
                           )),
                       const SizedBox(height: 28),
-                      
                     ],
                   ),
                 ),
@@ -153,7 +182,8 @@ class _MainMenuScreenState extends State<MainMenuScreen>
 // ─────────────────────────────────────────────
 
 class _GameTitle extends StatelessWidget {
-  const _GameTitle();
+  final _Palette p;
+  const _GameTitle({required this.p});
 
   @override
   Widget build(BuildContext context) {
@@ -163,24 +193,24 @@ class _GameTitle extends StatelessWidget {
           width: 80,
           height: 80,
           decoration: BoxDecoration(
-            color: const Color(0xFFDCEDC8),
+            color: p.iconBg,
             shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFFA5D6A7), width: 2),
+            border: Border.all(color: p.iconBorder, width: 2),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.energy_savings_leaf_rounded,
             size: 42,
-            color: Color(0xFF2E7D32),
+            color: p.accent,
           ),
         ),
         const SizedBox(height: 18),
-        const Text(
+        Text(
           'BUSCAMINAS',
           style: TextStyle(
             fontSize: 36,
             fontWeight: FontWeight.w900,
             letterSpacing: 6,
-            color: Color(0xFF1B5E20),
+            color: p.textPrimary,
             height: 1,
           ),
         ),
@@ -188,19 +218,19 @@ class _GameTitle extends StatelessWidget {
         Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(width: 28, height: 1.5, color: const Color(0xFF81C784)),
+            Container(width: 28, height: 1.5, color: p.divider),
             const SizedBox(width: 10),
-            const Text(
+            Text(
               'FLUTTER',
               style: TextStyle(
                 fontSize: 10,
                 letterSpacing: 4,
-                color: Color(0xFF66BB6A),
+                color: p.accentMuted,
                 fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 10),
-            Container(width: 28, height: 1.5, color: const Color(0xFF81C784)),
+            Container(width: 28, height: 1.5, color: p.divider),
           ],
         ),
       ],
@@ -215,8 +245,13 @@ class _GameTitle extends StatelessWidget {
 class _AnimatedMenuButton extends StatefulWidget {
   final _MenuItem item;
   final AnimationController controller;
+  final _Palette p;
 
-  const _AnimatedMenuButton({required this.item, required this.controller});
+  const _AnimatedMenuButton({
+    required this.item,
+    required this.controller,
+    required this.p,
+  });
 
   @override
   State<_AnimatedMenuButton> createState() => _AnimatedMenuButtonState();
@@ -228,6 +263,7 @@ class _AnimatedMenuButtonState extends State<_AnimatedMenuButton> {
 
   @override
   Widget build(BuildContext context) {
+    final p = widget.p;
     final start = widget.item.delay / 1300.0;
     final end = (start + 0.5).clamp(0.0, 1.0);
 
@@ -267,17 +303,14 @@ class _AnimatedMenuButtonState extends State<_AnimatedMenuButton> {
                 padding: const EdgeInsets.symmetric(vertical: 18),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
-                  color: _hovered ? widget.item.color : Colors.white,
+                  color: _hovered ? widget.item.color : p.surface,
                   border: Border.all(
-                    color: _hovered
-                        ? widget.item.color
-                        : const Color(0xFFC8E6C9),
+                    color: _hovered ? widget.item.color : p.surfaceBorder,
                     width: 1.5,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFFA5D6A7)
-                          .withOpacity(_hovered ? 0.35 : 0.2),
+                      color: p.accentLight.withOpacity(_hovered ? 0.35 : 0.2),
                       blurRadius: _hovered ? 12 : 4,
                       offset: const Offset(0, 3),
                     ),
@@ -308,34 +341,40 @@ class _AnimatedMenuButtonState extends State<_AnimatedMenuButton> {
 // ─────────────────────────────────────────────
 
 class _BackgroundDecor extends StatelessWidget {
-  const _BackgroundDecor();
+  final _Palette p;
+  const _BackgroundDecor({required this.p});
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(child: CustomPaint(painter: _BgPainter()));
+    return Positioned.fill(child: CustomPaint(painter: _BgPainter(p: p)));
   }
 }
 
 class _BgPainter extends CustomPainter {
+  final _Palette p;
+  const _BgPainter({required this.p});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    paint.color = const Color(0xFFC8E6C9).withOpacity(0.5);
+    paint.color = p.surfaceBorder.withOpacity(0.5);
     canvas.drawCircle(
       Offset(size.width * 0.85, size.height * 0.05),
       size.width * 0.4,
       paint,
     );
 
-    paint.color = const Color(0xFFB2DFDB).withOpacity(0.45);
+    paint.color = const Color(0xFFB2DFDB).withOpacity(
+      p.background == const Color(0xFF121212) ? 0.08 : 0.45,
+    );
     canvas.drawCircle(
       Offset(size.width * 0.05, size.height * 0.92),
       size.width * 0.38,
       paint,
     );
 
-    paint.color = const Color(0xFFDCEDC8).withOpacity(0.35);
+    paint.color = p.iconBg.withOpacity(0.35);
     canvas.drawCircle(
       Offset(size.width * 0.5, size.height * 0.5),
       size.width * 0.55,
@@ -344,14 +383,8 @@ class _BgPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _BgPainter old) => old.p.background != p.background;
 }
-
-// ─────────────────────────────────────────────
-//  FOOTER
-// ─────────────────────────────────────────────
-
-
 
 // ─────────────────────────────────────────────
 //  MODELO DE ÍTEM DE MENÚ

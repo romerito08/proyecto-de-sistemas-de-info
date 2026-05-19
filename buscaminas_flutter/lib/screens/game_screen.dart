@@ -5,6 +5,119 @@ import 'package:buscaminas_flutter/logica/board_logic.dart';
 import 'package:buscaminas_flutter/logica/sonido.dart';
 import 'package:buscaminas_flutter/logica/scores.dart';
 
+// ─────────────────────────────────────────────
+//  PALETA ADAPTATIVA
+// ─────────────────────────────────────────────
+
+class _Palette {
+  final Color background;
+  final Color surface;
+  final Color surfaceBorder;
+  final Color accent;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+
+  // Celdas
+  final Color cellHidden;
+  final Color cellHiddenBorder;
+  final Color cellRevealed;
+  final Color cellRevealedBorder;
+  final Color cellFlagged;
+  final Color cellMine;
+  final Color cellShadow;
+
+  // Diálogos
+  final Color dialogBg;
+  final Color dialogTitle;
+  final Color dialogBody;
+  final Color dialogHint;
+  final Color dialogFieldFill;
+  final Color dialogFieldBorder;
+  final Color dialogFieldFocused;
+
+  const _Palette._({
+    required this.background,
+    required this.surface,
+    required this.surfaceBorder,
+    required this.accent,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.cellHidden,
+    required this.cellHiddenBorder,
+    required this.cellRevealed,
+    required this.cellRevealedBorder,
+    required this.cellFlagged,
+    required this.cellMine,
+    required this.cellShadow,
+    required this.dialogBg,
+    required this.dialogTitle,
+    required this.dialogBody,
+    required this.dialogHint,
+    required this.dialogFieldFill,
+    required this.dialogFieldBorder,
+    required this.dialogFieldFocused,
+  });
+
+  factory _Palette.of(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return dark ? _Palette._dark() : _Palette._light();
+  }
+
+  factory _Palette._light() => const _Palette._(
+        background: Color(0xFFF1F8E9),
+        surface: Colors.white,
+        surfaceBorder: Color(0xFFC8E6C9),
+        accent: Color(0xFF2E7D32),
+        textPrimary: Color(0xFF1B5E20),
+        textSecondary: Color(0xFF2E7D32),
+        textMuted: Color(0xFF555555),
+        cellHidden: Colors.white,
+        cellHiddenBorder: Color(0xFFA5D6A7),
+        cellRevealed: Color(0xFFE8F5E9),
+        cellRevealedBorder: Color(0xFFDCEDC8),
+        cellFlagged: Color(0xFFFFF9C4),
+        cellMine: Color(0xFFFFCDD2),
+        cellShadow: Colors.black,
+        dialogBg: Color(0xFFF1F8E9),
+        dialogTitle: Color(0xFF1B5E20),
+        dialogBody: Color(0xFF555555),
+        dialogHint: Color(0xFFBDBDBD),
+        dialogFieldFill: Colors.white,
+        dialogFieldBorder: Color(0xFFA5D6A7),
+        dialogFieldFocused: Color(0xFF2E7D32),
+      );
+
+  factory _Palette._dark() => const _Palette._(
+        background: Color(0xFF121212),
+        surface: Color(0xFF1E1E1E),
+        surfaceBorder: Color(0xFF2E4A2E),
+        accent: Color(0xFF81C784),
+        textPrimary: Color(0xFFA5D6A7),
+        textSecondary: Color(0xFF81C784),
+        textMuted: Color(0xFF9E9E9E),
+        cellHidden: Color(0xFF1E1E1E),
+        cellHiddenBorder: Color(0xFF388E3C),
+        cellRevealed: Color(0xFF1B2E1B),
+        cellRevealedBorder: Color(0xFF2E4A2E),
+        cellFlagged: Color(0xFF2E2A00),
+        cellMine: Color(0xFF3E1212),
+        cellShadow: Colors.black,
+        dialogBg: Color(0xFF1A1A1A),
+        dialogTitle: Color(0xFFA5D6A7),
+        dialogBody: Color(0xFF9E9E9E),
+        dialogHint: Color(0xFF616161),
+        dialogFieldFill: Color(0xFF242424),
+        dialogFieldBorder: Color(0xFF388E3C),
+        dialogFieldFocused: Color(0xFF81C784),
+      );
+}
+
+// ─────────────────────────────────────────────
+//  GAME SCREEN
+// ─────────────────────────────────────────────
+
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
 
@@ -34,22 +147,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   // ── Mapa de dificultad → parámetros del tablero ──────────────────────────
   static const Map<String, Map<String, int>> _difficultyParams = {
-    'Fácil': {'rows': 6, 'cols': 6, 'mines': 10},
-    'Medio': {'rows': 8, 'cols': 8, 'mines': 20},
+    'Fácil':   {'rows': 6,  'cols': 6,  'mines': 10},
+    'Medio':   {'rows': 8,  'cols': 8,  'mines': 20},
     'Difícil': {'rows': 10, 'cols': 10, 'mines': 30},
   };
 
   // ── Paletas de colores por estilo de números ─────────────────────────────
   static const Map<String, List<Color>> _numberColors = {
     'Clásico': [
-      Color(0xFF1565C0), // 1 - azul
-      Color(0xFF2E7D32), // 2 - verde
-      Color(0xFFC62828), // 3 - rojo
-      Color(0xFF6A1B9A), // 4 - morado
-      Color(0xFFBF360C), // 5 - naranja oscuro
-      Color(0xFF00838F), // 6 - cian
-      Color(0xFF37474F), // 7 - gris oscuro
-      Color(0xFF424242), // 8 - gris
+      Color(0xFF1565C0),
+      Color(0xFF2E7D32),
+      Color(0xFFC62828),
+      Color(0xFF6A1B9A),
+      Color(0xFFBF360C),
+      Color(0xFF00838F),
+      Color(0xFF37474F),
+      Color(0xFF424242),
     ],
     'Colorido': [
       Color(0xFFE91E63),
@@ -89,7 +202,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    // Controlador de animación para aparición del tablero
     _boardFadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 500),
@@ -115,16 +227,15 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      _difficulty = prefs.getString('difficulty') ?? 'Fácil';
-      _numberStyle = prefs.getString('numberStyle') ?? 'Clásico';
-      _soundEnabled = prefs.getBool('sound') ?? true;
-      _animationsEnabled = prefs.getBool('animations') ?? true;
-      _loading = false;
+      _difficulty     = prefs.getString('difficulty')   ?? 'Fácil';
+      _numberStyle    = prefs.getString('numberStyle')  ?? 'Clásico';
+      _soundEnabled   = prefs.getBool('sound')          ?? true;
+      _animationsEnabled = prefs.getBool('animations')  ?? true;
+      _loading        = false;
     });
 
     _initBoard();
 
-    // Pedir nombre antes de empezar
     WidgetsBinding.instance.addPostFrameCallback((_) => _showNameDialog());
   }
 
@@ -132,8 +243,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     _timer?.cancel();
     _elapsedSeconds = 0;
 
-    final params =
-        _difficultyParams[_difficulty] ?? _difficultyParams['Fácil']!;
+    final params = _difficultyParams[_difficulty] ?? _difficultyParams['Fácil']!;
     _board = BoardLogic(
       rows: params['rows']!,
       cols: params['cols']!,
@@ -171,30 +281,31 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // ── Diálogo de nombre ─────────────────────────────────────────────────────
 
   void _showNameDialog() {
+    final p = _Palette.of(context);
     final controller = TextEditingController(text: _playerName);
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (dialogContext) {
         return AlertDialog(
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          backgroundColor: const Color(0xFFF1F8E9),
-          title: const Text(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          backgroundColor: p.dialogBg,
+          title: Text(
             '¿Cómo te llamas?',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontWeight: FontWeight.w800,
-              color: Color(0xFF1B5E20),
+              color: p.dialogTitle,
               fontSize: 18,
             ),
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text(
+              Text(
                 'Máximo 7 caracteres',
-                style: TextStyle(color: Color(0xFF777777), fontSize: 12),
+                style: TextStyle(color: p.textMuted, fontSize: 12),
               ),
               const SizedBox(height: 12),
               TextField(
@@ -203,28 +314,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                 maxLength: 7,
                 textCapitalization: TextCapitalization.words,
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
-                  color: Color(0xFF1B5E20),
+                  color: p.dialogTitle,
                   letterSpacing: 2,
                 ),
                 decoration: InputDecoration(
                   counterText: '',
                   filled: true,
-                  fillColor: Colors.white,
+                  fillColor: p.dialogFieldFill,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFA5D6A7)),
+                    borderSide: BorderSide(color: p.dialogFieldBorder),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(
-                        color: Color(0xFF2E7D32), width: 2),
+                    borderSide: BorderSide(color: p.dialogFieldFocused, width: 2),
                   ),
                   hintText: 'TU NOMBRE',
-                  hintStyle: const TextStyle(
-                      color: Color(0xFFBDBDBD), fontSize: 16),
+                  hintStyle: TextStyle(color: p.dialogHint, fontSize: 16),
                 ),
               ),
             ],
@@ -234,17 +343,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             TextButton(
               onPressed: () {
                 final name = controller.text.trim();
-                if (name.isEmpty) return; // no permite vacío
+                if (name.isEmpty) return;
                 setState(() => _playerName = name);
                 Navigator.of(dialogContext).pop();
               },
               style: TextButton.styleFrom(
-                backgroundColor: const Color(0xFF2E7D32),
+                backgroundColor: p.accent,
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10)),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 36, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 12),
               ),
               child: const Text('¡A jugar!',
                   style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
@@ -264,7 +372,6 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final cell = _board.grid[r][c];
     if (cell.isFlagged || cell.isRevealed) return;
 
-    // Arrancar cronómetro en el primer toque real
     if (_board.gameState == GameState.idle) _startTimer();
 
     setState(() {
@@ -284,8 +391,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     if (_board.gameState == GameState.won ||
         _board.gameState == GameState.lost) {
       _stopTimer();
-      Future.delayed(
-          const Duration(milliseconds: 300), _showGameOverDialog);
+      Future.delayed(const Duration(milliseconds: 300), _showGameOverDialog);
     }
   }
 
@@ -314,11 +420,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     final key = 'scores_$_difficulty';
     final raw = prefs.getStringList(key) ?? [];
 
-    // Solo guardar si ganó (scores = mejores tiempos)
     if (won) {
       raw.add(entry.toJson());
 
-      // Ordenar por tiempo ascendente y conservar solo top 5
       final entries = raw
           .map((e) => ScoreEntry.fromJson(e))
           .where((e) => e.won)
@@ -333,9 +437,9 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
   // ── Diálogo fin de partida ────────────────────────────────────────────────
 
   void _showGameOverDialog() {
+    final p = _Palette.of(context);
     final won = _board.gameState == GameState.won;
 
-    // Guardar score si ganó
     if (won) _saveScore(true);
 
     showDialog(
@@ -343,25 +447,24 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
       barrierDismissible: false,
       builder: (dialogContext) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: const Color(0xFFF1F8E9),
+        backgroundColor: p.dialogBg,
         title: Text(
           won ? '¡Ganaste! 🎉' : 'Pisaste una mina 💥',
           style: TextStyle(
             fontWeight: FontWeight.w800,
-            color: won ? const Color(0xFF2E7D32) : const Color(0xFFC62828),
+            color: won ? p.accent : const Color(0xFFC62828),
           ),
           textAlign: TextAlign.center,
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Nombre del jugador
             Text(
               _playerName.isEmpty ? 'Jugador' : _playerName,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
-                color: Color(0xFF1B5E20),
+                color: p.textPrimary,
                 letterSpacing: 1.5,
               ),
             ),
@@ -371,13 +474,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
                   ? 'Completaste $_difficulty en $_timeFormatted'
                   : 'Duraste $_timeFormatted antes de explotar.',
               textAlign: TextAlign.center,
-              style: const TextStyle(color: Color(0xFF555555)),
+              style: TextStyle(color: p.dialogBody),
             ),
           ],
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
-          // ── Jugar de nuevo ───────────────────────────────────────────────
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
@@ -386,25 +488,22 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
               _showNameDialog();
             },
             style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF2E7D32),
+              backgroundColor: p.accent,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
             ),
             child: const Text('Jugar de nuevo',
                 style: TextStyle(fontWeight: FontWeight.w700)),
           ),
-          // ── Menú principal ───────────────────────────────────────────────
           TextButton(
             onPressed: () {
               Navigator.of(dialogContext).pop();
               if (!mounted) return;
               Navigator.of(context).pop();
             },
-            style:
-                TextButton.styleFrom(foregroundColor: const Color(0xFF2E7D32)),
+            style: TextButton.styleFrom(foregroundColor: p.accent),
             child: const Text('Menú principal'),
           ),
         ],
@@ -424,24 +523,26 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    final p = _Palette.of(context);
+
     if (_loading) {
-      return const Scaffold(
-        backgroundColor: Color(0xFFF1F8E9),
+      return Scaffold(
+        backgroundColor: p.background,
         body: Center(
-          child: CircularProgressIndicator(color: Color(0xFF2E7D32)),
+          child: CircularProgressIndicator(color: p.accent),
         ),
       );
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F8E9),
+      backgroundColor: p.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(
+          icon: Icon(
             Icons.arrow_back_ios_new_rounded,
-            color: Color(0xFF2E7D32),
+            color: p.accent,
             size: 18,
           ),
           onPressed: () {
@@ -453,8 +554,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
           children: [
             Text(
               _difficulty.toUpperCase(),
-              style: const TextStyle(
-                color: Color(0xFF1B5E20),
+              style: TextStyle(
+                color: p.textPrimary,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 2,
                 fontSize: 14,
@@ -463,8 +564,8 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             if (_playerName.isNotEmpty)
               Text(
                 _playerName,
-                style: const TextStyle(
-                  color: Color(0xFF2E7D32),
+                style: TextStyle(
+                  color: p.textSecondary,
                   fontSize: 11,
                   fontWeight: FontWeight.w600,
                 ),
@@ -478,13 +579,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             padding: const EdgeInsets.only(right: 4),
             child: Row(
               children: [
-                const Icon(Icons.timer_outlined,
-                    color: Color(0xFF2E7D32), size: 16),
+                Icon(Icons.timer_outlined, color: p.accent, size: 16),
                 const SizedBox(width: 2),
                 Text(
                   _timeFormatted,
-                  style: const TextStyle(
-                    color: Color(0xFF1B5E20),
+                  style: TextStyle(
+                    color: p.textPrimary,
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                   ),
@@ -497,13 +597,12 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             padding: const EdgeInsets.only(right: 16),
             child: Row(
               children: [
-                const Icon(Icons.park_sharp,
-                    color: Color(0xFF2E7D32), size: 18),
+                Icon(Icons.park_sharp, color: p.accent, size: 18),
                 const SizedBox(width: 4),
                 Text(
                   '${_board.minesLeft}',
-                  style: const TextStyle(
-                    color: Color(0xFF1B5E20),
+                  style: TextStyle(
+                    color: p.textPrimary,
                     fontWeight: FontWeight.w800,
                     fontSize: 16,
                   ),
@@ -521,31 +620,21 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             child: GestureDetector(
               onTap: _restartGame,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 8,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: p.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: const Color(0xFFC8E6C9),
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: p.surfaceBorder, width: 1.5),
                 ),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.refresh_rounded,
-                      color: Color(0xFF2E7D32),
-                      size: 18,
-                    ),
-                    SizedBox(width: 6),
+                    Icon(Icons.refresh_rounded, color: p.accent, size: 18),
+                    const SizedBox(width: 6),
                     Text(
                       'Reiniciar',
                       style: TextStyle(
-                        color: Color(0xFF2E7D32),
+                        color: p.accent,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,
                       ),
@@ -561,7 +650,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             child: Center(
               child: FadeTransition(
                 opacity: _boardFadeAnim,
-                child: _buildBoard(),
+                child: _buildBoard(p),
               ),
             ),
           ),
@@ -572,7 +661,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   // ── Construcción del tablero ──────────────────────────────────────────────
 
-  Widget _buildBoard() {
+  Widget _buildBoard(_Palette p) {
     return Padding(
       padding: const EdgeInsets.all(12),
       child: AspectRatio(
@@ -582,7 +671,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             return Expanded(
               child: Row(
                 children: List.generate(_board.cols, (c) {
-                  return Expanded(child: _buildCell(r, c));
+                  return Expanded(child: _buildCell(r, c, p));
                 }),
               ),
             );
@@ -592,7 +681,7 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildCell(int r, int c) {
+  Widget _buildCell(int r, int c, _Palette p) {
     final cell = _board.grid[r][c];
 
     return GestureDetector(
@@ -604,18 +693,16 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
             : Duration.zero,
         margin: const EdgeInsets.all(1.5),
         decoration: BoxDecoration(
-          color: _cellColor(cell),
+          color: _cellColor(cell, p),
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: cell.isRevealed
-                ? const Color(0xFFDCEDC8)
-                : const Color(0xFFA5D6A7),
+            color: cell.isRevealed ? p.cellRevealedBorder : p.cellHiddenBorder,
             width: 1.2,
           ),
           boxShadow: cell.isHidden
               ? [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
+                    color: p.cellShadow.withOpacity(0.08),
                     blurRadius: 2,
                     offset: const Offset(0, 1),
                   ),
@@ -629,11 +716,11 @@ class _GameScreenState extends State<GameScreen> with TickerProviderStateMixin {
 
   // ── Color de celda ────────────────────────────────────────────────────────
 
-  Color _cellColor(Cell cell) {
-    if (cell.isFlagged) return const Color(0xFFFFF9C4);
-    if (!cell.isRevealed) return Colors.white;
-    if (cell.isMine) return const Color(0xFFFFCDD2);
-    return const Color(0xFFE8F5E9);
+  Color _cellColor(Cell cell, _Palette p) {
+    if (cell.isFlagged)   return p.cellFlagged;
+    if (!cell.isRevealed) return p.cellHidden;
+    if (cell.isMine)      return p.cellMine;
+    return p.cellRevealed;
   }
 
   // ── Contenido de celda ────────────────────────────────────────────────────

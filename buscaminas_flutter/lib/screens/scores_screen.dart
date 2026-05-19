@@ -2,6 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:buscaminas_flutter/logica/scores.dart';
 
+// ─────────────────────────────────────────────
+//  PALETA ADAPTATIVA
+// ─────────────────────────────────────────────
+
+class _Palette {
+  final Color background;
+  final Color surface;
+  final Color surfaceAlt;
+  final Color accent;
+  final Color textPrimary;
+  final Color textSecondary;
+  final Color textMuted;
+  final Color headerBorder;
+  final Color tabIndicator;
+  final Color tabLabel;
+  final Color tabUnselected;
+  final Color deleteIcon;
+  final Color rowBorderDefault;
+
+  const _Palette._({
+    required this.background,
+    required this.surface,
+    required this.surfaceAlt,
+    required this.accent,
+    required this.textPrimary,
+    required this.textSecondary,
+    required this.textMuted,
+    required this.headerBorder,
+    required this.tabIndicator,
+    required this.tabLabel,
+    required this.tabUnselected,
+    required this.deleteIcon,
+    required this.rowBorderDefault,
+  });
+
+  factory _Palette.of(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return dark ? _Palette._dark() : _Palette._light();
+  }
+
+  factory _Palette._light() => const _Palette._(
+        background: Color(0xFFF1F8E9),
+        surface: Colors.white,
+        surfaceAlt: Color(0xFFF9FBF9),
+        accent: Color(0xFF2E7D32),
+        textPrimary: Color(0xFF1B5E20),
+        textSecondary: Color(0xFF2E7D32),
+        textMuted: Color(0xFF9E9E9E),
+        headerBorder: Colors.transparent,
+        tabIndicator: Color(0xFF2E7D32),
+        tabLabel: Color(0xFF1B5E20),
+        tabUnselected: Color(0xFF9E9E9E),
+        deleteIcon: Color(0xFFC62828),
+        rowBorderDefault: Color(0xFFE0E0E0),
+      );
+
+  factory _Palette._dark() => const _Palette._(
+        background: Color(0xFF121212),
+        surface: Color(0xFF1E1E1E),
+        surfaceAlt: Color(0xFF1A1A1A),
+        accent: Color(0xFF81C784),
+        textPrimary: Color(0xFFA5D6A7),
+        textSecondary: Color(0xFF81C784),
+        textMuted: Color(0xFF757575),
+        headerBorder: Colors.transparent,
+        tabIndicator: Color(0xFF81C784),
+        tabLabel: Color(0xFFA5D6A7),
+        tabUnselected: Color(0xFF616161),
+        deleteIcon: Color(0xFFEF9A9A),
+        rowBorderDefault: Color(0xFF2C2C2C),
+      );
+}
+
+// ─────────────────────────────────────────────
+//  SCORES SCREEN
+// ─────────────────────────────────────────────
+
 class ScoresScreen extends StatefulWidget {
   const ScoresScreen({super.key});
 
@@ -11,26 +88,30 @@ class ScoresScreen extends StatefulWidget {
 
 class _ScoresScreenState extends State<ScoresScreen>
     with SingleTickerProviderStateMixin {
-  // ── Tabs por dificultad ──────────────────────────────────────────────────
   late TabController _tabController;
   final List<String> _difficulties = ['Fácil', 'Medio', 'Difícil'];
 
   Map<String, List<ScoreEntry>> _scores = {};
   bool _loading = true;
 
-  // ── Medallas ──────────────────────────────────────────────────────────────
   static const _medals = ['🥇', '🥈', '🥉'];
 
   static const _medalColors = [
-    Color(0xFFFFF8E1), // oro  - fondo
-    Color(0xFFF5F5F5), // plata
-    Color(0xFFFBE9E7), // bronce
+    Color(0xFFFFF8E1),
+    Color(0xFFF5F5F5),
+    Color(0xFFFBE9E7),
+  ];
+
+  static const _medalColorsDark = [
+    Color(0xFF2C2600),
+    Color(0xFF1F1F1F),
+    Color(0xFF2C1200),
   ];
 
   static const _medalBorders = [
-    Color(0xFFFFD54F), // oro
-    Color(0xFFBDBDBD), // plata
-    Color(0xFFFF8A65), // bronce
+    Color(0xFFFFD54F),
+    Color(0xFFBDBDBD),
+    Color(0xFFFF8A65),
   ];
 
   @override
@@ -45,8 +126,6 @@ class _ScoresScreenState extends State<ScoresScreen>
     _tabController.dispose();
     super.dispose();
   }
-
-  // ── Carga de scores ───────────────────────────────────────────────────────
 
   Future<void> _loadScores() async {
     final prefs = await SharedPreferences.getInstance();
@@ -64,31 +143,32 @@ class _ScoresScreenState extends State<ScoresScreen>
     });
   }
 
-  // ── Borrar todos los marcadores ───────────────────────────────────────────
-
   Future<void> _clearAll() async {
+    final p = _Palette.of(context);
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        backgroundColor: const Color(0xFFF1F8E9),
-        title: const Text(
+        backgroundColor: p.background,
+        title: Text(
           '¿Borrar todo?',
           textAlign: TextAlign.center,
           style: TextStyle(
-              fontWeight: FontWeight.w800, color: Color(0xFFC62828)),
+            fontWeight: FontWeight.w800,
+            color: p.deleteIcon,
+          ),
         ),
-        content: const Text(
+        content: Text(
           'Se eliminarán todos los marcadores de todas las dificultades.',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Color(0xFF555555)),
+          style: TextStyle(color: p.textMuted),
         ),
         actionsAlignment: MainAxisAlignment.center,
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            style: TextButton.styleFrom(
-                foregroundColor: const Color(0xFF2E7D32)),
+            style: TextButton.styleFrom(foregroundColor: p.accent),
             child: const Text('Cancelar'),
           ),
           TextButton(
@@ -98,8 +178,7 @@ class _ScoresScreenState extends State<ScoresScreen>
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10)),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 24, vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
             ),
             child: const Text('Borrar',
                 style: TextStyle(fontWeight: FontWeight.w700)),
@@ -117,24 +196,23 @@ class _ScoresScreenState extends State<ScoresScreen>
     await _loadScores();
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
+    final p = _Palette.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F8E9),
+      backgroundColor: p.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded,
-              color: Color(0xFF2E7D32), size: 18),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: p.accent, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'MARCADORES',
           style: TextStyle(
-            color: Color(0xFF1B5E20),
+            color: p.textPrimary,
             fontWeight: FontWeight.w800,
             letterSpacing: 3,
             fontSize: 16,
@@ -143,40 +221,32 @@ class _ScoresScreenState extends State<ScoresScreen>
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded,
-                color: Color(0xFFC62828)),
+            icon: Icon(Icons.delete_outline_rounded, color: p.deleteIcon),
             tooltip: 'Borrar todo',
             onPressed: _clearAll,
           ),
         ],
         bottom: TabBar(
           controller: _tabController,
-          indicatorColor: const Color(0xFF2E7D32),
-          labelColor: const Color(0xFF1B5E20),
-          unselectedLabelColor: const Color(0xFF9E9E9E),
-          labelStyle: const TextStyle(
-              fontWeight: FontWeight.w800, fontSize: 13),
-          tabs: _difficulties
-              .map((d) => Tab(text: d.toUpperCase()))
-              .toList(),
+          indicatorColor: p.tabIndicator,
+          labelColor: p.tabLabel,
+          unselectedLabelColor: p.tabUnselected,
+          labelStyle: const TextStyle(fontWeight: FontWeight.w800, fontSize: 13),
+          tabs: _difficulties.map((d) => Tab(text: d.toUpperCase())).toList(),
         ),
       ),
       body: _loading
-          ? const Center(
-              child:
-                  CircularProgressIndicator(color: Color(0xFF2E7D32)))
+          ? Center(child: CircularProgressIndicator(color: p.accent))
           : TabBarView(
               controller: _tabController,
               children: _difficulties
-                  .map((d) => _buildDifficultyTab(d))
+                  .map((d) => _buildDifficultyTab(d, p))
                   .toList(),
             ),
     );
   }
 
-  // ── Tab por dificultad ────────────────────────────────────────────────────
-
-  Widget _buildDifficultyTab(String difficulty) {
+  Widget _buildDifficultyTab(String difficulty, _Palette p) {
     final entries = _scores[difficulty] ?? [];
 
     if (entries.isEmpty) {
@@ -186,24 +256,25 @@ class _ScoresScreenState extends State<ScoresScreen>
           children: [
             const Text('🏆', style: TextStyle(fontSize: 56)),
             const SizedBox(height: 16),
-            const Text(
+            Text(
               'Aún no tienes registros.',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: Color(0xFF555555),
+                color: p.textMuted,
               ),
             ),
             const SizedBox(height: 6),
             Text(
               '¡Juega tu primera partida en $difficulty!',
-              style: const TextStyle(
-                  color: Color(0xFF9E9E9E), fontSize: 13),
+              style: TextStyle(color: p.textMuted, fontSize: 13),
             ),
           ],
         ),
       );
     }
+
+    final dark = Theme.of(context).brightness == Brightness.dark;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 20, 16, 32),
@@ -212,54 +283,58 @@ class _ScoresScreenState extends State<ScoresScreen>
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           child: Row(
-            children: const [
-              SizedBox(width: 36), // espacio medalla
+            children: [
+              const SizedBox(width: 36),
               Expanded(
-                  flex: 3,
-                  child: Text('JUGADOR',
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF9E9E9E),
-                          letterSpacing: 1))),
+                flex: 3,
+                child: Text('JUGADOR',
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: p.textMuted,
+                        letterSpacing: 1)),
+              ),
               Expanded(
-                  flex: 2,
-                  child: Text('TIEMPO',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF9E9E9E),
-                          letterSpacing: 1))),
+                flex: 2,
+                child: Text('TIEMPO',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: p.textMuted,
+                        letterSpacing: 1)),
+              ),
               Expanded(
-                  flex: 3,
-                  child: Text('FECHA',
-                      textAlign: TextAlign.right,
-                      style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF9E9E9E),
-                          letterSpacing: 1))),
+                flex: 3,
+                child: Text('FECHA',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        color: p.textMuted,
+                        letterSpacing: 1)),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 4),
 
-        // Filas de scores
-        ...List.generate(entries.length, (i) => _buildRow(entries[i], i)),
+        ...List.generate(
+          entries.length,
+          (i) => _buildRow(entries[i], i, p, dark),
+        ),
       ],
     );
   }
 
-  // ── Fila de score ─────────────────────────────────────────────────────────
-
-  Widget _buildRow(ScoreEntry entry, int index) {
+  Widget _buildRow(ScoreEntry entry, int index, _Palette p, bool dark) {
     final isTop3 = index < 3;
+    final medalBgs = dark ? _medalColorsDark : _medalColors;
+
     final bgColor = isTop3
-        ? _medalColors[index]
-        : (index.isEven ? Colors.white : const Color(0xFFF9FBF9));
-    final borderColor =
-        isTop3 ? _medalBorders[index] : const Color(0xFFE0E0E0);
+        ? medalBgs[index]
+        : (index.isEven ? p.surface : p.surfaceAlt);
+    final borderColor = isTop3 ? _medalBorders[index] : p.rowBorderDefault;
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -289,7 +364,7 @@ class _ScoresScreenState extends State<ScoresScreen>
                 style: TextStyle(
                   fontSize: isTop3 ? 20 : 13,
                   fontWeight: FontWeight.w800,
-                  color: const Color(0xFF9E9E9E),
+                  color: p.textMuted,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -304,9 +379,7 @@ class _ScoresScreenState extends State<ScoresScreen>
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   fontSize: 15,
-                  color: isTop3
-                      ? const Color(0xFF1B5E20)
-                      : const Color(0xFF333333),
+                  color: isTop3 ? p.textPrimary : p.textSecondary,
                   letterSpacing: 0.5,
                 ),
                 overflow: TextOverflow.ellipsis,
@@ -322,9 +395,7 @@ class _ScoresScreenState extends State<ScoresScreen>
                 style: TextStyle(
                   fontWeight: FontWeight.w900,
                   fontSize: 14,
-                  color: isTop3
-                      ? const Color(0xFF2E7D32)
-                      : const Color(0xFF555555),
+                  color: isTop3 ? p.accent : p.textMuted,
                 ),
               ),
             ),
@@ -335,9 +406,9 @@ class _ScoresScreenState extends State<ScoresScreen>
               child: Text(
                 _formatDate(entry.date),
                 textAlign: TextAlign.right,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 11,
-                  color: Color(0xFF9E9E9E),
+                  color: p.textMuted,
                   fontWeight: FontWeight.w500,
                 ),
               ),

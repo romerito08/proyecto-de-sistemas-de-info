@@ -1,5 +1,42 @@
 import 'package:flutter/material.dart';
 
+// ─────────────────────────────────────────────
+//  PALETA ADAPTATIVA
+// ─────────────────────────────────────────────
+
+class _Palette {
+  final Color background;
+  final Color textPrimary;
+  final Color textSecondary;
+
+  const _Palette._({
+    required this.background,
+    required this.textPrimary,
+    required this.textSecondary,
+  });
+
+  factory _Palette.of(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    return dark ? _Palette._dark() : _Palette._light();
+  }
+
+  factory _Palette._light() => const _Palette._(
+        background: Color(0xFFEAF4DE),
+        textPrimary: Color(0xFF1B5E20),
+        textSecondary: Color(0xFF66BB6A),
+      );
+
+  factory _Palette._dark() => const _Palette._(
+        background: Color(0xFF121212),
+        textPrimary: Color(0xFFA5D6A7),
+        textSecondary: Color(0xFF4CAF50),
+      );
+}
+
+// ─────────────────────────────────────────────
+//  SPLASH SCREEN
+// ─────────────────────────────────────────────
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
   @override
@@ -20,7 +57,7 @@ class _SplashScreenState extends State<SplashScreen>
       duration: const Duration(seconds: 3),
     );
 
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(_controller);
+    _fadeAnim = Tween<double>(begin: 0, end: 2).animate(_controller);
     _controller.forward();
 
     Future.delayed(const Duration(seconds: 3), () {
@@ -36,30 +73,32 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
+    final p = _Palette.of(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFFEAF4DE),
+      backgroundColor: p.background,
       body: Center(
         child: FadeTransition(
           opacity: _fadeAnim,
-          child: const Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('💣', style: TextStyle(fontSize: 80, color: Colors.white)),
-              SizedBox(height: 16),
+              const Text('💣', style: TextStyle(fontSize: 80)),
+              const SizedBox(height: 16),
               Text(
                 'BUSCAMINAS',
                 style: TextStyle(
                   fontSize: 36,
-                  color: Color(0xFF1B5E20),
+                  color: p.textPrimary,
                   fontWeight: FontWeight.bold,
                   letterSpacing: 6,
                 ),
               ),
               Text(
-                "FLUTTER",
+                'FLUTTER',
                 style: TextStyle(
                   fontSize: 16,
-                  color: Color(0xFF66BB6A),
+                  color: p.textSecondary,
                   letterSpacing: 12,
                 ),
               ),

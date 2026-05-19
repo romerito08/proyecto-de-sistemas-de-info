@@ -2,6 +2,49 @@ import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:buscaminas_flutter/logica/sonido.dart';
+import 'package:buscaminas_flutter/theme_notifier.dart';
+
+// ─────────────────────────────────────────────
+//  PALETA ADAPTATIVA (claro / oscuro)
+// ─────────────────────────────────────────────
+
+class _Palette {
+  final bool dark;
+  const _Palette(this.dark);
+
+  factory _Palette.of(BuildContext context) =>
+      _Palette(Theme.of(context).brightness == Brightness.dark);
+
+  // Fondos
+  Color get scaffold   => dark ? const Color(0xFF121212) : const Color(0xFFF1F8E9);
+  Color get surface    => dark ? const Color(0xFF1E1E1E) : Colors.white;
+  Color get surfaceTint=> dark ? const Color(0xFF2E7D32).withOpacity(0.12)
+                               : const Color(0xFF2E7D32).withOpacity(0.06);
+
+  // Bordes
+  Color get border     => dark ? const Color(0xFF2E7D32).withOpacity(0.5)
+                               : const Color(0xFFC8E6C9);
+  Color get borderFaint=> dark ? const Color(0xFF424242) : const Color(0xFFE0E0E0);
+
+  // Textos
+  Color get textPrimary   => dark ? const Color(0xFFB9F6CA) : const Color(0xFF1B5E20);
+  Color get textSecondary => dark ? const Color(0xFF81C784) : const Color(0xFF66BB6A);
+  Color get textBody      => dark ? Colors.white : const Color(0xFF333333);
+  Color get textMuted     => dark ? Colors.white54 : Colors.grey.shade600;
+
+  // Acento
+  Color get accent        => const Color(0xFF2E7D32);
+  Color get accentSubtle  => dark ? const Color(0xFF2E7D32).withOpacity(0.15)
+                                  : const Color(0xFF2E7D32).withOpacity(0.08);
+
+  // Decoración de fondo
+  Color get decor1 => dark ? const Color(0xFF1B5E20).withOpacity(0.4)
+                           : const Color(0xFFC8E6C9).withOpacity(0.5);
+  Color get decor2 => dark ? const Color(0xFF004D40).withOpacity(0.35)
+                           : const Color(0xFFB2DFDB).withOpacity(0.45);
+  Color get decor3 => dark ? const Color(0xFF212121).withOpacity(0.6)
+                           : const Color(0xFFDCEDC8).withOpacity(0.35);
+}
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -77,10 +120,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _savePreferences() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('difficulty', _difficulty);
-    await prefs.setString('theme', _theme);
     await prefs.setString('numberStyle', _numberStyle);
     await prefs.setBool('sound', _sound);
     await prefs.setBool('animations', _animations);
+
+    await themeNotifier.setTheme(_theme);
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -106,127 +150,121 @@ class _SettingsScreenState extends State<SettingsScreen> {
   // ── Build principal ───────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF1F8E9),
-      body: Stack(
-        children: [
-          const _BackgroundDecor(),
-          SafeArea(
-            child: Column(
-              children: [
-                // ── Encabezado alineado a la esquina superior izquierda ──
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: Row(
-                    children: [
-                      IconButton(
-                        onPressed: () async {
-                          await SoundService.playButton(); // Reproduce el sonido al hacer clic
-                          Navigator.pop(context);
-                        },
-                        icon: const Icon(
-                          Icons.arrow_back_ios_new_rounded,
-                          size: 18,
-                          color: Color(0xFF2E7D32),
-                        ),
-                        style: IconButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          side: const BorderSide(
-                            color: Color(0xFFC8E6C9),
-                            width: 1.5,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // ── Contenido con Scroll ───────────────────────────────────────
-                Expanded(
-                  child: _loading
-                      ? const Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF2E7D32),
-                          ),
-                        )
-                      : LayoutBuilder(
-                          builder: (context, constraints) {
-                            final isWide = constraints.maxWidth > 700;
-                            return _SettingsLayout(
-                              isWide: isWide,
-                              leftColumn: _buildLeftColumn(),
-                              rightColumn: _buildRightColumn(),
-                            );
-                          },
-                        ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      // ── Botón Guardar Fijo abajo ───────────────────────────────────────────
-      bottomNavigationBar: _loading
-          ? null
-          : SafeArea(
-              child: Container(
-                padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+    return ListenableBuilder(
+      listenable: themeNotifier,
+      builder: (context, _) {
+        final p = _Palette.of(context);
+        return Scaffold(
+          backgroundColor: p.scaffold,
+          body: Stack(
+            children: [
+              _BackgroundDecor(p: p),
+              SafeArea(
+                child: Column(
                   children: [
-                    Container(
-                      constraints: const BoxConstraints(maxWidth: 500),
-                      width: double.infinity,
-                      child: GestureDetector(
-                        onTap: _savePreferences,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2E7D32),
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: const Color(
-                                  0xFF2E7D32,
-                                ).withOpacity(0.35),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                      child: Row(
+                        children: [
+                          IconButton(
+                            onPressed: () async {
+                              await SoundService.playButton();
+                              Navigator.pop(context);
+                            },
+                            icon: const Icon(
+                              Icons.arrow_back_ios_new_rounded,
+                              size: 18,
+                              color: Color(0xFF2E7D32),
+                            ),
+                            style: IconButton.styleFrom(
+                              backgroundColor: p.surface,
+                              side: BorderSide(color: p.border, width: 1.5),
+                            ),
                           ),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'GUARDAR CONFIGURACIÓN',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 2,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        ],
                       ),
+                    ),
+                    Expanded(
+                      child: _loading
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF2E7D32),
+                              ),
+                            )
+                          : LayoutBuilder(
+                              builder: (context, constraints) {
+                                final isWide = constraints.maxWidth > 700;
+                                return _SettingsLayout(
+                                  isWide: isWide,
+                                  p: p,
+                                  leftColumn: _buildLeftColumn(p),
+                                  rightColumn: _buildRightColumn(p),
+                                );
+                              },
+                            ),
                     ),
                   ],
                 ),
               ),
-            ),
+            ],
+          ),
+          bottomNavigationBar: _loading
+              ? null
+              : SafeArea(
+                  child: Container(
+                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          constraints: const BoxConstraints(maxWidth: 500),
+                          width: double.infinity,
+                          child: GestureDetector(
+                            onTap: _savePreferences,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF2E7D32),
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: const Color(0xFF2E7D32).withOpacity(0.35),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'GUARDAR CONFIGURACIÓN',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 2,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+        );
+      },
     );
   }
 
-  // ── Columna izquierda: Dificultad y Toggles ─────────────────────────────────
-  Widget _buildLeftColumn() {
+  Widget _buildLeftColumn(_Palette p) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
-          icon: Icons.sports_esports_rounded,
-          title: 'DIFICULTAD',
-        ),
+        _SectionTitle(icon: Icons.sports_esports_rounded, title: 'DIFICULTAD', p: p),
         const SizedBox(height: 12),
         ..._difficulties.map(
           (d) => _DifficultyTile(
@@ -234,18 +272,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             desc: d['desc'] as String,
             emoji: d['icon'] as String,
             selected: _difficulty == d['label'],
+            p: p,
             onTap: () => setState(() => _difficulty = d['label'] as String),
           ),
         ),
-        const SizedBox(height: 24), // Espaciador antes de la siguiente sección
-        // ── Opciones toggle ─────────────────────
-        const _SectionTitle(icon: Icons.tune_rounded, title: 'OPCIONES'),
+        const SizedBox(height: 24),
+        _SectionTitle(icon: Icons.tune_rounded, title: 'OPCIONES', p: p),
         const SizedBox(height: 12),
         _ToggleOption(
           icon: Icons.volume_up_rounded,
           title: 'Efectos de sonido',
           subtitle: 'Sonidos al revelar casillas y al ganar/perder',
           value: _sound,
+          p: p,
           onChanged: (v) => setState(() => _sound = v),
         ),
         const SizedBox(height: 10),
@@ -254,21 +293,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
           title: 'Animaciones',
           subtitle: 'Transiciones y efectos visuales del tablero',
           value: _animations,
+          p: p,
           onChanged: (v) => setState(() => _animations = v),
         ),
       ],
     );
   }
 
-  // ── Columna derecha: Estilos y Tema ───────────────────────────────────────────
-  Widget _buildRightColumn() {
+  Widget _buildRightColumn(_Palette p) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _SectionTitle(
-          icon: Icons.format_paint_rounded,
-          title: 'ESTILO DE NÚMEROS',
-        ),
+        _SectionTitle(icon: Icons.format_paint_rounded, title: 'ESTILO DE NÚMEROS', p: p),
         const SizedBox(height: 12),
         ..._numberStyles.map(
           (s) => _NumberStyleTile(
@@ -276,17 +312,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
             desc: s['desc'] as String,
             preview: s['preview'] as List<Color>,
             selected: _numberStyle == s['label'],
+            p: p,
             onTap: () => setState(() => _numberStyle = s['label'] as String),
           ),
         ),
-        const SizedBox(height: 24), // Espaciador antes de la siguiente sección
-
-        const _SectionTitle(icon: Icons.palette_rounded, title: 'TEMA'),
+        const SizedBox(height: 24),
+        _SectionTitle(icon: Icons.palette_rounded, title: 'TEMA', p: p),
         const SizedBox(height: 12),
         _ThemeSelector(
           selected: _theme,
           themes: _themes,
-          onChanged: (v) => setState(() => _theme = v),
+          p: p,
+          onChanged: (v) {
+            setState(() => _theme = v);
+            themeNotifier.setTheme(v);
+          },
         ),
       ],
     );
@@ -299,11 +339,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
 class _SettingsLayout extends StatelessWidget {
   final bool isWide;
+  final _Palette p;
   final Widget leftColumn;
   final Widget rightColumn;
 
   const _SettingsLayout({
     required this.isWide,
+    required this.p,
     required this.leftColumn,
     required this.rightColumn,
   });
@@ -318,18 +360,16 @@ class _SettingsLayout extends StatelessWidget {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              // Aquí añadimos el título para que baje y tenga scroll
-              const Text(
+              Text(
                 'CONFIGURACIÓN',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   letterSpacing: 6,
-                  color: Color(0xFF1B5E20),
+                  color: p.textPrimary,
                 ),
               ),
-              const SizedBox(height: 28), // Espacio debajo del título principal
-              // Dependiendo del ancho, se divide en 2 columnas o se mantiene vertical
+              const SizedBox(height: 28),
               isWide
                   ? Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -361,21 +401,22 @@ class _SettingsLayout extends StatelessWidget {
 class _SectionTitle extends StatelessWidget {
   final IconData icon;
   final String title;
-  const _SectionTitle({required this.icon, required this.title});
+  final _Palette p;
+  const _SectionTitle({required this.icon, required this.title, required this.p});
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 14, color: const Color(0xFF66BB6A)),
+        Icon(icon, size: 14, color: p.textSecondary),
         const SizedBox(width: 6),
         Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w800,
             letterSpacing: 3,
-            color: Color(0xFF66BB6A),
+            color: p.textSecondary,
           ),
         ),
       ],
@@ -392,6 +433,7 @@ class _DifficultyTile extends StatelessWidget {
   final String desc;
   final String emoji;
   final bool selected;
+  final _Palette p;
   final VoidCallback onTap;
 
   const _DifficultyTile({
@@ -399,6 +441,7 @@ class _DifficultyTile extends StatelessWidget {
     required this.desc,
     required this.emoji,
     required this.selected,
+    required this.p,
     required this.onTap,
   });
 
@@ -412,9 +455,9 @@ class _DifficultyTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          color: selected ? const Color(0xFF2E7D32) : Colors.white,
+          color: selected ? const Color(0xFF2E7D32) : p.surface,
           border: Border.all(
-            color: selected ? const Color(0xFF2E7D32) : const Color(0xFFC8E6C9),
+            color: selected ? const Color(0xFF2E7D32) : p.border,
             width: 1.5,
           ),
           boxShadow: [
@@ -444,7 +487,7 @@ class _DifficultyTile extends StatelessWidget {
                   desc,
                   style: TextStyle(
                     fontSize: 12,
-                    color: selected ? Colors.white70 : Colors.grey[600],
+                    color: selected ? Colors.white70 : p.textMuted,
                   ),
                 ),
               ],
@@ -452,7 +495,7 @@ class _DifficultyTile extends StatelessWidget {
             const Spacer(),
             Icon(
               selected ? Icons.check_circle_rounded : Icons.circle_outlined,
-              color: selected ? Colors.white : const Color(0xFFC8E6C9),
+              color: selected ? Colors.white : p.border,
               size: 20,
             ),
           ],
@@ -469,11 +512,13 @@ class _DifficultyTile extends StatelessWidget {
 class _ThemeSelector extends StatelessWidget {
   final String selected;
   final List<Map<String, dynamic>> themes;
+  final _Palette p;
   final ValueChanged<String> onChanged;
 
   const _ThemeSelector({
     required this.selected,
     required this.themes,
+    required this.p,
     required this.onChanged,
   });
 
@@ -482,9 +527,9 @@ class _ThemeSelector extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(6),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: p.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFC8E6C9), width: 1.5),
+        border: Border.all(color: p.border, width: 1.5),
       ),
       child: Row(
         children: themes.map((t) {
@@ -496,9 +541,7 @@ class _ThemeSelector extends StatelessWidget {
                 duration: const Duration(milliseconds: 180),
                 padding: const EdgeInsets.symmetric(vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? const Color(0xFF2E7D32)
-                      : Colors.transparent,
+                  color: isSelected ? const Color(0xFF2E7D32) : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
@@ -506,9 +549,7 @@ class _ThemeSelector extends StatelessWidget {
                     Icon(
                       t['icon'] as IconData,
                       size: 20,
-                      color: isSelected
-                          ? Colors.white
-                          : const Color(0xFF81C784),
+                      color: isSelected ? Colors.white : const Color(0xFF81C784),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -517,9 +558,7 @@ class _ThemeSelector extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         letterSpacing: 0.5,
-                        color: isSelected
-                            ? Colors.white
-                            : const Color(0xFF558B2F),
+                        color: isSelected ? Colors.white : p.textSecondary,
                       ),
                     ),
                   ],
@@ -542,6 +581,7 @@ class _NumberStyleTile extends StatelessWidget {
   final String desc;
   final List<Color> preview;
   final bool selected;
+  final _Palette p;
   final VoidCallback onTap;
 
   const _NumberStyleTile({
@@ -549,6 +589,7 @@ class _NumberStyleTile extends StatelessWidget {
     required this.desc,
     required this.preview,
     required this.selected,
+    required this.p,
     required this.onTap,
   });
 
@@ -561,12 +602,10 @@ class _NumberStyleTile extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: selected
-              ? const Color(0xFF2E7D32).withOpacity(0.06)
-              : Colors.white,
+          color: selected ? p.surfaceTint : p.surface,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: selected ? const Color(0xFF2E7D32) : const Color(0xFFE0E0E0),
+            color: selected ? const Color(0xFF2E7D32) : p.borderFaint,
             width: selected ? 1.8 : 1,
           ),
         ),
@@ -607,23 +646,19 @@ class _NumberStyleTile extends StatelessWidget {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,
-                      color: selected
-                          ? const Color(0xFF1B5E20)
-                          : const Color(0xFF333333),
+                      color: selected ? p.textPrimary : p.textBody,
                     ),
                   ),
                   Text(
                     desc,
-                    style: TextStyle(fontSize: 11, color: Colors.grey[600]),
+                    style: TextStyle(fontSize: 11, color: p.textMuted),
                   ),
                 ],
               ),
             ),
             Icon(
               selected ? Icons.check_circle_rounded : Icons.circle_outlined,
-              color: selected
-                  ? const Color(0xFF2E7D32)
-                  : const Color(0xFFBDBDBD),
+              color: selected ? const Color(0xFF2E7D32) : p.borderFaint,
               size: 20,
             ),
           ],
@@ -642,6 +677,7 @@ class _ToggleOption extends StatelessWidget {
   final String title;
   final String subtitle;
   final bool value;
+  final _Palette p;
   final ValueChanged<bool> onChanged;
 
   const _ToggleOption({
@@ -649,6 +685,7 @@ class _ToggleOption extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.value,
+    required this.p,
     required this.onChanged,
   });
 
@@ -656,30 +693,30 @@ class _ToggleOption extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: p.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFC8E6C9), width: 1.5),
+        border: Border.all(color: p.border, width: 1.5),
       ),
       child: SwitchListTile(
         secondary: Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: const Color(0xFF2E7D32).withOpacity(0.08),
+            color: p.accentSubtle,
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 20, color: const Color(0xFF2E7D32)),
         ),
         title: Text(
           title,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 14,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF1B5E20),
+            color: p.textPrimary,
           ),
         ),
         subtitle: Text(
           subtitle,
-          style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+          style: TextStyle(fontSize: 12, color: p.textMuted),
         ),
         value: value,
         activeColor: const Color(0xFF2E7D32),
@@ -694,41 +731,38 @@ class _ToggleOption extends StatelessWidget {
 // ─────────────────────────────────────────────
 
 class _BackgroundDecor extends StatelessWidget {
-  const _BackgroundDecor();
+  final _Palette p;
+  const _BackgroundDecor({required this.p});
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(child: CustomPaint(painter: _BgPainter()));
+    return Positioned.fill(
+      child: CustomPaint(
+        painter: _BgPainter(c1: p.decor1, c2: p.decor2, c3: p.decor3),
+      ),
+    );
   }
 }
 
 class _BgPainter extends CustomPainter {
+  final Color c1, c2, c3;
+  const _BgPainter({required this.c1, required this.c2, required this.c3});
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    paint.color = const Color(0xFFC8E6C9).withOpacity(0.5);
-    canvas.drawCircle(
-      Offset(size.width * 0.85, size.height * 0.05),
-      size.width * 0.4,
-      paint,
-    );
+    paint.color = c1;
+    canvas.drawCircle(Offset(size.width * 0.85, size.height * 0.05), size.width * 0.4, paint);
 
-    paint.color = const Color(0xFFB2DFDB).withOpacity(0.45);
-    canvas.drawCircle(
-      Offset(size.width * 0.05, size.height * 0.92),
-      size.width * 0.38,
-      paint,
-    );
+    paint.color = c2;
+    canvas.drawCircle(Offset(size.width * 0.05, size.height * 0.92), size.width * 0.38, paint);
 
-    paint.color = const Color(0xFFDCEDC8).withOpacity(0.35);
-    canvas.drawCircle(
-      Offset(size.width * 0.5, size.height * 0.5),
-      size.width * 0.55,
-      paint,
-    );
+    paint.color = c3;
+    canvas.drawCircle(Offset(size.width * 0.5, size.height * 0.5), size.width * 0.55, paint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _BgPainter old) =>
+      old.c1 != c1 || old.c2 != c2 || old.c3 != c3;
 }
