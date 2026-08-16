@@ -209,52 +209,47 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ],
           ),
           bottomNavigationBar: _loading
-              ? null
-              : SafeArea(
-                  child: Container(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
+            ? null
+            : SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Flexible(
+                        child: Container(
                           constraints: const BoxConstraints(maxWidth: 500),
                           width: double.infinity,
-                          child: GestureDetector(
-                            onTap: _savePreferences,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF2E7D32),
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: const Color(0xFF2E7D32).withOpacity(0.35),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
+                          child: ElevatedButton(
+                            onPressed: _savePreferences,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2E7D32),
+                              padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                              elevation: 4,
+                              shadowColor: const Color(0xFF2E7D32).withOpacity(0.35),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(
-                                    'GUARDAR CONFIGURACIÓN',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: 2,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ],
+                            ),
+                            child: const FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                'GUARDAR CONFIGURACIÓN',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: 1.5,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
         );
       },
     );
